@@ -1,0 +1,425 @@
+*.git命令中所有的字符串（下面用str_作为前缀的字符串值）如果不包含空格可以直接裸写，包含空格需要用""引起来
+*.git默认使用vi作为其编辑器
+
+
+1.查看git的版本：git --version
+
+
+2.配置git：git config（属性配置是一劳永逸的，一次配置之后就无需再配置了）
+
+  a.选项：
+    i.--global，全局有效（当前用户下全局生效）
+    ii.--system，整个系统有效（整个OS中的所有用户都全局生效，需要管理员权限sudo）
+    iii.没有选项表示只在当前仓库中生效
+
+  b.配置属性：
+    i.用户名：user.name str_name
+    ii.用户邮箱：user.email str_email
+    iii.命令别名：alias.别名 str_command
+！由于别名所替代的内容仅仅是字符串的宏替换，因此也可以替换带参数的命令别名，例如：git config --global alias.ci "commit -s"
+    iv.开启命令输出的颜色显示：color.ui boolean
+
+  c.常用配置：
+
+#用户信息配置
+git config --global user.name "double cute"
+git config --global user.email xxx@xxx.com
+
+#命令别名
+sudo git config --system alias.st status  #系统范围内的配置需要sudo权限
+git config --global alias.ci commit
+git config --global alias.co checkout
+
+#命令输出颜色开启
+git config --global color.ui true
+git config --global alias.br branch
+
+
+3.git config的本质：底层操作的是git配置文件
+
+  a.直接编辑git配置文件（-e选项表示edit，命令执行后会直接用vi打开相应的配置文件进行编辑，最后保存退出即可）：git config -e
+    i.仓库级（打开的是.git/config）：git config -e
+    ii.个人全局级（打开的是~/.gitconfig）：git config -e --global
+    iii.系统全局级（打开的是/etc/gitconfig）：sudo git config -e --system
+
+  b.git配置文件的格式是INI：属性包含在节中，节可以有子节
+
+  c.可以用git config命令显示和修改任何INI文件的内容（也包括非git配置文件）：
+    i.一般形式：[GIT_CONFIG=目标文件名] git config [--global | --system] 节1.节2...节N.属性名 [str_new_attr_val]
+    ii.第一个[]不加就代表操作的是git配置文件，而具体操作的是哪个级别的git配置文件由--global | system决定
+    iii.最后一个[]不加就代表命令只显示属性的值，如果加上str_new_attr_val就代表重设该属性的值（如果之前不存在就新建一个该属性）
+
+  d.示例：
+git config --global user.a.b.name   #显示~/.gitconfig中user下的a下的b中的属性name的值
+git config --system user.name "Peter Parker"   #将/etc/gitconfig中的user下的name属性的值改为Peter Parker
+GIT_CONFIG=dog.ini git config fur.color Yellow   #将dog.ini中狗的毛色属性改为黄色
+
+  e.删除属性：使用--unset选项并指明要删除的属性即可
+GIT_CONFIG=dog.ini git config --unset fur.color   #删除dog.ini中毛色这一属性
+git config --unset --global user.name   #删除~/.gitconfig文件中user.name这一属性
+
+
+4.创建版本库：git init
+
+  a.隐藏目录.git就是版本库（repository），而.git外层的那个目录是工作区
+
+  b.在当前目录下创建工作区的同时并初始化版本库（在工作区中自动上生成.git）：git init 工作区名
+
+  c.以当前目录作为工作区生成.git版本库：git init
+
+
+5.提交更新：git commit
+
+  a.git强制要求提交需要提交说明（描述本次提交的更新包括什么内容）：git commit -m str_comment
+
+  b.如果就是不写提交说明则会强制用vi打开一个编辑板让你输入提交说明（编写完说明后保存退出即可）：git commit
+
+  c.提交空的更新：git commit --allow-empty -m str_comment
+    i.如果之前没有git add任何待提交的更新直接强行git commit -m str_comment的话相当于空提交
+    ii.git会阻止空提交，并且git log中也不会记录空提交
+    iii.但有时候就是需要空提交以完成一些测试，为了让git log（其实也包括版本）能记住一次空提交的版本就需要用--allow-empty选项了
+
+  d.不要使用git commit -a命令，-a表示将工作区中所有直接相对于HEAD的更新一次性自动git add + git commit，由于这样做会失去对stage的控制，非常不好，没有体现出Git相对于其他版本控制系统的优势
+
+6.寻找版本库.git：git rev-parse
+
+  a.git init的机制保证了.git版本库一定是位于顶层的工作区根目录下，这是git的设计理念（参考集中式版本控制的缺点设计的）
+
+  b.这就导致了如果在不包含.git的工作区中使用git命令会报错，比如在workspace/下（workspace没用git init初始化，就意味着没有.git版本库）的某个位置（可能是某个子目录的子目录）使用git status会直接报错，显示无.git
+
+  c.也就是说.git版本库决定了git能否运行（后面的示例为当前处于绝对路径/workspace/demo/a/b/c下，其中demo/是包含.git的工作区）
+
+  d.在工作区的某个节点处寻找.git的位置：git rev-parse --git-dir   #返回/workspace/demo/.git
+
+  e.寻找工作区根目录：git rev-parse --show-toplevel   #返回/workspace/demo
+
+  f.pwd一下当前节点相对于工作区根目录的位置：git rev-parse --show-prefix   #返回a/b/c/
+
+
+7.查看提交记录：git log（从近到远显示）
+   
+  a.常规查看：git log
+
+  b.统计每次提交时文件的变更信息（会显示每次提交有几个文件更新，多少行插入以及删除）：git log --stat
+
+  c.显示每次提交的作者和提交者：git log --pretty=fuller
+  
+  d.每次提交只显示简单的一行（提交ID和提交说明）：git log --pretty=oneline
+
+  e.在oneline的基础上缩减对象ID（将原来的40位缩减为头几位）：git log --oneline
+
+  f.显示每次提交的引用（即分支以及标签号）：git log --decorate
+*.由于一般--decorate最多的用途就是查看历史中具有标签号的提交，因此都是用简化显示：git log --decorate --oneline
+
+
+8.查看文件的更新情况：git diff（会列出所有更新的文件中的更新情况）
+
+  a.工作区相对于stage的最新改动：git diff
+
+  b.工作区相对于HEAD的最新改动：git diff HEAD
+
+  c.stage相对于HEAD的最新改动：git diff --staged | cached
+
+
+9.查看当前版本状态：git status
+
+  a.全状态查看（工作区相对于stage有改动的：not staged...；stage里还有未提交的：to be commited）：git status
+
+  b.简状态查看（第1位表示stage相对于HEAD，第2位表示工作区相对于stage，A表示新增（added），M表示修改（modified），命令选项-s是simple的缩写）：git status -s
+
+  c.显示当前位于哪个分支（-b 选项，即branch的缩写）：git status -b
+！通常配合-s，git status -s -b，精简的同时也显示当前分支
+
+  d.强制查看工作区中哪些文件还未被跟踪：git status --ingored
+！加-s可以简化显示，其中??表示未被.gitignore忽略但是还未被跟踪的，而!!表示被.gitignore忽略的
+
+
+10.重置（即版本在历史中穿梭——时空漫游，移动分支游标）：git reset
+
+  a.用版本库中的某几个指定的文件覆盖stage中相应的文件：git reset [提交ID | 提交引用] -- 文件路径列表（空格隔开）
+！！特点是命令中包含单独的--和文件路径
+    i.表示用指定提交ID的版本库中的指定文件来覆盖stage中的相应文件
+    ii.如果提交ID的[]不写则默认用HEAD作为提交ID的指向
+    iii.--可省，其目的是避免提交引用名和文件路径名冲突的情况，一般情况下建议加上--，能一目了然地表示这是版本库对stage的覆盖
+    iv.示例：
+git reset HEAD^ -- lib/go.c   #用上一个提交版本中的lib/go.c覆盖当前stage中lib/go.c
+git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中相应的文件
+
+  b.全重置：git reset [--soft | mixed | hard] [提交ID或引用]
+    i.提交ID的[]不写则默认为HEAD
+    ii.--soft：仅仅将当前分支指针指向指定ID的提交处（即移动游标）
+    iii.--mixed或者缺省：移动游标的同时用指定ID所代表的版本的全部内容覆盖stage
+    iv.--hard：在--mixed的基础上，继续用覆盖后的stage来覆盖工作区，相当于直接用指定ID的版本全部同时覆盖至stage和工作区
+    v.因此--hard比较危险，容易导致损失，一定要慎用
+    vi.示例：
+git reset --soft HEAD^   #回退到上一个版本（游标前移），stage和工作区不变
+git reset --mixed HEAD^  #回退版本的同时用上一个版本的全部内容覆盖stage
+git reset --mixed HEAD   #相当于清空stage（用当前版本覆盖stage）
+git reset HEAD           #同上
+git reset                #同上
+git reset --hard HEAD^^  #回推到上上个版本，并且stage和工作区也重置成上上个版本
+
+  c.悔棋：用git reflog挽救错误的重置（重置后发现还是充值前的那个版本更好，所以想反悔了）、
+*.git reset是真正的时空穿梭，不仅版本库、stage、工作区会穿梭，就连历史（git log）也会跟着一起穿梭
+*.如果git reset回了前第3次提交，那么git log中的历史也回到了前第3次提交的状态了，即看不到前第1次和前第2次的提交
+*.这就使得无法用git log来追踪重置前的提交ID，这也就意味着无法通过查看git log来回到未来了！
+*.因此git log记录的起始是版本历史而非提交历史，提交是一种操作，版本是版本库的状态，是一种时间节点
+*.幸好git reflog是记录纯提交操作的，就连"git reset回到过去"的提交也会被记录下来
+    i.git reflog的输出格式：提交ID <引用名（分支名或者HEAD）>@{<n>}:当时的提交说明
+*.HEAD或者该分支的第n次前的提交
+*.例如git reflog的输出为
+938a761 HEAD@{0}:938a761: updating HEAD
+e2d1342 HEAD@{1}:HEAD^: updating HEAD
+    ii.可以通过reflog查看到重置之前的ID，然后利用该ID来个git reset --hard ID一下回到未来
+*.更简单的是使用<refname>@{<n>}来回到未来，即git reset --hard <refname>@{<n>}
+*.例如上面的示例回到过去：
+git reset --hard e2d1342
+git reset --hard HEAD@{1}
+*.两者完全相同，只不过后者更加强大，不依赖git reflog的查询，可以直接回到未来！
+    iii.默认查看HEAD的提交历史：git reflog
+    iv.查看指定分支的提交历史：git reflog show 分支名
+*.此时命令的显示结果的中间部分就变成了<分支名>@{<n>}
+*.例如：git reflog show master   #查看主分支的提交操作记录
+
+
+11.检出（HEAD指向分支游标，分支游标指向该分支最新的版本提交，但实际上HEAD可以指向任意提交节点，如果HEAD指向了非分支游标则发生“断头”的情况）：git checkout
+
+  a.git reset的主要功能是移动分支游标（即master以及其他branch），而git check的主要功能就是移动HEAD游标（指向不同的分支游标），即切换当前分支（同时覆盖工作区或stage）
+
+  b.检出文件（不会改变HEAD指针，特点就是还原指定的几个文件到工作区）：git checkout [<提交ID或引用>] [--] <文件路径列表>
+    i.该命令最重要的特征就是具有文件路径
+    ii.如果提交ID或引用的这项[]省略则表示将指定的若干文件从stage还原到工作区，相当于撤销当前工作区文件的修改
+    iii.如果提交ID或引用这项[]不省略，则表示从该ID的版本库中将指定文件同时还原到stage和工作区
+    iv.示例：
+git checkout -- go.c   #将工作区的go.c还原成stage中的
+git checkout HEAD^ -- go.c do.c   #将上一个版本的go.c和do.c还原到当前stage和工作区
+git checkout -- .   #将整个工作区都还原成和stage一样！相当危险，其实整个git checkout命令也是相当危险的，因为会直接覆盖当前工作区的修改，并且覆盖后数据无法找回
+
+  c.检出分支（切换分支）：git checkout [<分支名>]
+    i.该命令的主要特点是没有文件路径了
+    ii.该命令会切换HEAD指向指定的分只游标
+    iii.并且会用指定分支的最新版本覆盖stage和工作区，即完全和指定分支的最新版本干净、一致的状态
+    iv.执行该命令的前提是必须保证当前工作区和stage干净（即没有任何更新，stage相对于当前版本、工作区相对于staged），否则报错拒绝执行
+    v.如果省略分支名则默认分支为HEAD，即git checkout == git checkout HEAD，这并不表示用当前版本还原stage和工作区，仅仅就是显示当前工作区、stage和HEAD的差异，不做任何改变
+    vi.示例：
+git checkout   #检查当前工作区、stage和HEAD的差异
+git checkout HEAD   #同上
+git checkout other_branch   #HEAD切成other_branch，同时用other_branch的最新版本覆盖当前stage和工作区
+！那应该如何用HEAD来覆盖当前stage和工作区呢？很简单，git reset --hard即可
+
+
+12.保存进度日后慢聊：git stash
+
+  a.如果你现在正工作了一般，突然接到一个紧急任务要求你在另一个分支上修改一个bug（可能命令你在1小时之内改完），那现在问题来了，我当前完成了一般的任务就不得不中止待之后完成了，因此需要保存当前的任务
+*.首先不能提交当前的任务，因为该任务你只完成了一半，只有已经完成了一个阶段（可以测试运行了之后）才能提交（这是规矩）
+*.其次，你也不能不保存当前任务直接切到修改bug的分支上！不仅情理上不容（直接丢弃当前任务），而且法力上也不容，因为如果当前工作区和stage都有内容的话直接git checkout other_branch命令是拒绝执行的
+
+  b.幸好可以使用git stash命令将当前工作区和stage中的进度先暂时保存起来，进度保存后工作区和stage就干净了（并不是删除了，而是保持和HEAD一样了，用git status发现all clear），接着再checkout切换到其它分支就可以顺利进行了
+
+  c.保存当前进度：
+    i.git stash [save str_comment]   #保存进度的同时也可以对本次保存的进度做一些说明
+    ii.示例：
+git stash   #直接保存当前进度（工作区和stage）
+git stash save "music module haven't done yet"   #保存进度的同时对该进度做一些标注（该进度中音乐模块还未完成）
+
+  d.查看进度列表：git stash list
+    i.结果显示格式是一行中：stash@{<n>}:当时保存的分支名:进度说明
+    ii.n表示最近的第n个保存的进度，按照FIFO的顺序，后保存的先显示
+    iii.如果当时保存时自己用save选项做了说明则会在list命令中看到该说明
+    iv.如果没有用save选项对保存的进度作说明可以看到默认的说明是merge操作（stash底层是通过两次提交的merge实现对进度保存的，一次是保存工作区的提交，一次是保存stage的提交，最终将这两个提交合并放在元数据库中）
+
+  e.还原进度（还原后将相应的进度从git stash list中删除）：git stash pop [--index] [<stash>]
+    i.默认值还原工作区，--index还会还原stage，因为stage是保存在refs/index文件中的
+    ii.如果没有[<stash>]则默认从最近保存的一个进度还原，否则从指定的进度还原，[<stash>]即stash@{<n>}，可以参考git stash list的结果
+    iii.示例：
+git stash pop   #还原stash@<0>，只还原工作区，不还原stage
+git stash pop --index stash@<1>   #还原上上个进度，同时还原stage和工作区
+
+  f.还原进度（和pop一样，只不过不删除git stash list中的相应进度）：git stash apply [--index] [<stash>]
+
+  g.删除某个进度：git stash drop [<stash>]
+*.默认删除最近的一个进度
+
+  h.删除list中所有的进度：git stash clear
+
+
+13.打标签（快照）：git tag
+  
+  a.打标签的同时做出说明：git tag -m str_comment 标签名
+
+  b.查看当前版本与最近一次标签的距离：git describe
+
+
+14.往stage中添加修改后的文件：git add
+  
+  a.手动逐个显示添加：git add 文件列表
+
+  b.一次性自动将所有工作区的修改（只有被跟踪的文件）添加到stage中：git add -u
+ 
+  c.一次性自动将所有工作区的修改（包括跟踪和未跟踪的）添加到stage中：git add  -A
+
+
+15.删除工作区的文件：git rm
+
+  a.用法和Shell的rm一样，它完成两步，第一步在工作区中删除指定文件，第二步将删除这一修改动作添加到stage中
+
+  b.如果用Shell rm掉工作区文件，那么还必须将该文件git add到stage才行
+
+  c.当然最严谨的还是将工作区、stage和版本库的操作隔离开，先Shell rm工作区内容，再add，最后commit，但如果rm的文件特别多，那git add还要再抄一遍，很麻烦，还好有git add -u
+
+  d.示例：
+git rm a.txt b*c.txt   #支持通配符，工作区删除的同时也添加到stage
+rm *.txt; git add -u   #上述一条命令的分解
+
+
+16.移动（重命名）：git mv
+
+  a.使用方法和Shell的mv一样，和git rm一样也是同时完成两步，第一步是移动工作区文件，第二步是将移动的操作添加到stage中
+
+  b.git mv old new等价于git rm old; git add new;
+
+  c.git对git mv的跟踪能力强大，如果对一个文件同时进行移动和修改操作，git可以将这两个操作合并，在status只显示一个点rename更新：
+示例：git mv old new;  echo "new line" >> new;   git add -A;   git status会只显示一个renamed: old -> new，但是提交后可以看到old和new之间内容差异百分比
+
+  d.注意：直接使用Shell mv后的新文件不会被git跟踪，但是git mv只有的新文件会和git mv操作一并加到stage中，因此git mv后的新文件一定会被跟踪的
+
+
+17.忽略跟踪：.gitignore
+
+  a.里面记录着让git忽略跟踪的文件，特别是那些编译产生的中间文件.o .lib等，一旦被忽略，那么git add、git status等都追踪不到了
+ 
+  b.只要记录在.gitignore中的文件都将被git忽略，不管怎么git add、git add -A之类的都无法将其加入stage
+*.除非使用强制跟踪，即git add -f 文件列表，其中-f是force的缩写，该命令可以将.gitignore忽略的文件强行加入stage
+*.一旦加入stage，则文件就被git跟踪了，一旦被跟踪了，那么.gitignore对其的忽略将会无效，比如删了它在使用普通的git add也可以成功添加
+*.因此.gitignore只对未被跟踪过的文件有效，一旦被跟踪了，.gitignore就无效了！
+
+  c.强制查看工作区中哪些文件还未被跟踪：git status --ingored
+！加-s可以简化显示，其中??表示未被.gitignore忽略但是还未被跟踪的，而!!表示被.gitignore忽略的
+！最常用的还是git status --ignored -s
+
+  d.忽略的模式以及范围：
+    i.如果.gitignore放在工作区除.git的任意位置，那就是共享式的，该忽略的作用范围为本本版库（不会作用到其它版本库）
+    ii.首先，.gitignore文件自己本身也会被git追踪，一旦被追踪就会显示出其共享的特点，即push、pull的时候也会传递.gitignore文件，那么别人或者是你对忽略的设置也会在远程或者本地生效
+*.除非将.gitignore自己也忽略，即把.gitignore也记录在.gitignore中
+
+    iii.与共享对应的就是独享，独享有两种形式：
+      *1.局部独享：vim .git/info/exclude，该exclude文件就是.gitignore，作用范围就是其所处的版本库，不会影响其他版本库
+      *2.全局独享：git config --global core.excludesfile .gitignore的路径，通过该命令将.gitignore放在其它任意一个地方，并且是全局有效的（对本机的所有版本库都生效）
+      *3.示例：git config --global core.excludesfile /home/me/.gitignore
+
+  e.忽略语法：
+    i.一行一条忽略，可以使用正则表达式：*（0个或多个）、?（一个）、[abc]范围等等
+    ii.空行以及以#开头的注释将被忽略
+    iii.如果以/开头，则表示只忽略此目录下的文件，但不会递归地忽略其子文件中的内容
+    iv.如果以/结尾，则表示忽略此目录下的所有内容（会递归忽略其子目录）
+    v.以!其实表示不忽略
+    vi.示例：
+#comment
+*.a
+!lib.a       #忽略*.a但不忽略其中的lib.a
+/TODO        #之忽略TODO下的文件，但其子目录不忽略
+build/       #忽略构建目录中的所有文件
+doc/*.txt    #之忽略odc下的所有txt文件
+
+
+18.归档：git archive
+
+  a.直接对工作区归档会遇到种种麻烦，比如把中间文件等也归档了，还有一些git配置文件也会被归档，而这些都不是我们想要的，我们只想把源代码归档
+
+  b.git archive命令只会把本文库中的目录树归档
+
+  c.zip格式归档：git archive -o 输出归档文件名 版本库中目录树的引用 [该目录下想归档的文件或目录列表]
+    i.如果最后[]不写，则默认将整个目录树归档
+    ii.示例：git archive -o latest_module.zip HEAD^ src doc   #将上一版本的src和doc目录一并归档到latest_module.zip
+
+  d.tar格式归档（需要外界辅助，git本身并没有内置tar归档器）：git archive --format=tar 目录树引用 | gzip > 输出归档文件名
+    i.目录树引用也可以是tag标签
+    ii.示例：git archive --format=tar v1.0 | gzip > foo-1.0.tar.gz
+
+
+19.git支持的网络协议：
+
+   a.SSH：[user@]example.com[:port]:path/.git/
+
+   b.HTTP[S]：http[s]://example.com[:port]/path/.git/
+
+   c.GIT：git://example.com[:port]/path/.git/
+
+   d.FTP[S]：ftp[s]://example.com[:port]/path/.git/
+
+   e.本地：file:///path/.git/
+
+
+20.快进式推送：
+
+  a.首先需要克隆远程版本库：git clone 远程.git地址 [工作区]
+*.如果不包含[工作区]则会默认赋值远程.git的工作区，否则将.git版本库放在指定的工作区中
+
+  b.推送：git push [origin] [分支引用]
+    i.首先要知道推送给谁，当用git clone和远程建立关系后，就会把远程的.git地址自动写入.git/config文件中，位于remote origin下
+    ii.git默认将远程节点命名为origin，它就代表远程节点的地址
+    iii.上面的命令就是指将指定分支推送给远程origin版本库
+
+  c.快进式推送：是指上一次从远程获取代码到现在修改完推送代码过程中，远程版本库一直没有推进（更新），因此这样的推送是快进式的
+*.如果在这个过程中，远程版本库向前推进（推进了若干新版本），那么这样的推送就是非快进式
+    i.快进式推送永远不会发生冲突，永远都会成功！
+    ii.而非快进式推送直接会被拒绝！因为可能会发生潜在的冲突，除非你强制非快进式推送：git push -f
+    iii.强制非快进式推送会直接覆盖冲突的版本，并不会自动合并，因此是非常危险的，会导致开发战争！
+    iv.因此git服务器端（hub）应该主动拒绝非快进式推送（在服务器端执行）：git config receive.denyNonFastForwards true
+*.这样的话，即使客户端git push -f强制推送也会被拒绝！！
+
+  d.推送的本质：分为两步，第一步是服务器端接受推送，推送的版本接受为一临时分支，第二步是将该临时分支合并到目标分支上
+
+  e.如果有人比你先推送，那你推送的时候必然会发生非快进式推送
+
+
+21.解决非快进式推送：拉回后解决冲突（git pull/git fetch/git merge）
+
+  a.解决非快进式推送最简单、最直观也是最正确的思路就是把非快进推送变成快进式推送
+
+  b.按照这个思路，那问题就很简单了，解决办法就是先获取最新的远程版本，然后将获取的版本和要推送的版本合并后再推送，这样的话，新的推送版本就直接继承于远程版本，即快进式推送了
+*.如果在上述过程中，又有其他人抢先你一部推送成功了，那你就只能再重复上述过程了！
+
+  c.直接拉回：git pull [origin] [分支引用]
+    i.该命令其实是两步命令的合并：git fetch + git merge
+    ii.即先拉回origin的最新版本，然后自动将该版本和目前要推送的版本合并成新的推送版本
+  
+  d.git fetch的用法：git fetch [origin] [分支引用]
+    i.该命令将远程的最新版本分支克隆到本地，并开辟一个临时的"origin/分支引用"的分支保存它
+    ii.例如：git fetch origin master之后，本地会多出一个临时分支origin/master，里面暂存着刚刚拉取的分支
+
+  e.git merge的用法：git merge 提交引用或ID列表
+    i.该命令会自动将指定提交合并到当前分支
+    ii.会以提交前的当前分支作为第一个父提交，列表中从左到右的提交作为第二、第三...父提交
+
+  f.git push origin master  ==   git fetch origin master   +   git merge origin/master
+*.origin/master是fetch下载后暂存的隐藏分支，默认命名就是这样的
+
+
+22.合并以及冲突解决：git merge
+
+  a.git的merge非常智能，对于以下情况都可以实现自动合并，无需人工打开文件对比修改后实现无冲突合并：
+    i.不同文件中的修改
+    ii.同一文件中的不同位置的修改
+    iii.文件移动（其实就是重命名）、文件添加、文件删除等
+
+  b.无法自动合并的冲突：会直接报错，拒绝合并，要求用户自己决定如何修改后再合并
+    i.同体冲突：同一文件的相同地方的修改（这是显然的，也是最容易想到的）
+    ii.树冲突：目录中同一个结点在两个版本中错位，一个版本的某个目录移动到另一个位置，这样的话两个版本的该目录就在不同位置了，那么合并时应该合并到什么位置呢？肯定没有什么中间位置的，这种冲突也需要用户自己定夺了
+*.如果合并成功会自动提交一个新的合并后的版本，当然你也可以不提交，只要加--no-commit选项就行：git merge --no-commit 提交列表
+*.之后再自己仔细检查stage中内容确定后再commit，这样更加严谨
+    
+  c.同体冲突解决：
+    i.首先不管合并失败还是成功，该命令都会将已经成功完成合并的文件放入stage中，如果最终合并成功会提交并刷新stage
+    ii.如果没有合并成功，那除了冲突文件，其余合并成功的文件仍然已保存在stage中了，只会把没有解决冲突的文件放在工作区中
+    iii.只不过合并失败不会提交合并而已
+    iv.如果合并失败，会在失败信息中显示出那些没有解决冲突的文件，git会将这些文件做一些特殊标记放在工作区中待用户自己解决冲突
+    v.这些文件会用<<<<<<========>>>>>>符号标记出无法解决冲突的部分让用户自行修改，用户修改完成之后再git add、git commit便能完成最后的合并
+
+  d.树冲突解决：
+    i.
+   
+  e.无法依靠git解决的冲突——逻辑冲突：即逻辑bug
+    i.上述的所有情形即使是无法解决的冲突git也会提示你解决
+    ii.但是某些逻辑上的冲突确实没法按照上面套路解决的，比如头文件问题，一个人改了头文件的名称推送，另一个人改了实现文件合并，没有问题，因为改动的是不同文件
+    iii.但是头文件名改动后，所有引用它的实现文件中头文件名也需要该，虽然git不会报冲突，但是你工程编译的时候就会报错，而这里问题git没法解决，只能由项目经理特别注意，制定好机制来避免！
