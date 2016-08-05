@@ -12,30 +12,6 @@
 
 
 
-11.检出（HEAD指向分支游标，分支游标指向该分支最新的版本提交，但实际上HEAD可以指向任意提交节点，如果HEAD指向了非分支游标则发生“断头”的情况）：git checkout
-
-  a.git reset的主要功能是移动分支游标（即master以及其他branch），而git check的主要功能就是移动HEAD游标（指向不同的分支游标），即切换当前分支（同时覆盖工作区或stage）
-
-  b.检出文件（不会改变HEAD指针，特点就是还原指定的几个文件到工作区）：git checkout [<提交ID或引用>] [--] <文件路径列表>
-    i.该命令最重要的特征就是具有文件路径
-    ii.如果提交ID或引用的这项[]省略则表示将指定的若干文件从stage还原到工作区，相当于撤销当前工作区文件的修改
-    iii.如果提交ID或引用这项[]不省略，则表示从该ID的版本库中将指定文件同时还原到stage和工作区
-    iv.示例：
-git checkout -- go.c   #将工作区的go.c还原成stage中的
-git checkout HEAD^ -- go.c do.c   #将上一个版本的go.c和do.c还原到当前stage和工作区
-git checkout -- .   #将整个工作区都还原成和stage一样！相当危险，其实整个git checkout命令也是相当危险的，因为会直接覆盖当前工作区的修改，并且覆盖后数据无法找回
-
-  c.检出分支（切换分支）：git checkout [<分支名>]
-    i.该命令的主要特点是没有文件路径了
-    ii.该命令会切换HEAD指向指定的分只游标
-    iii.并且会用指定分支的最新版本覆盖stage和工作区，即完全和指定分支的最新版本干净、一致的状态
-    iv.执行该命令的前提是必须保证当前工作区和stage干净（即没有任何更新，stage相对于当前版本、工作区相对于staged），否则报错拒绝执行
-    v.如果省略分支名则默认分支为HEAD，即git checkout == git checkout HEAD，这并不表示用当前版本还原stage和工作区，仅仅就是显示当前工作区、stage和HEAD的差异，不做任何改变
-    vi.示例：
-git checkout   #检查当前工作区、stage和HEAD的差异
-git checkout HEAD   #同上
-git checkout other_branch   #HEAD切成other_branch，同时用other_branch的最新版本覆盖当前stage和工作区
-！那应该如何用HEAD来覆盖当前stage和工作区呢？很简单，git reset --hard即可
 
 
 12.保存进度日后慢聊：git stash

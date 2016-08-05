@@ -1,4 +1,5 @@
 1.重置（即版本在历史中穿梭——时空漫游，移动分支游标）：git reset
+#主要还原stage
 
   a.用版本库中的某几个指定的文件覆盖stage中相应的文件：git reset [提交ID | 提交引用] -- 文件路径列表（空格隔开）
 ！！特点是命令中包含单独的--和文件路径
@@ -7,7 +8,7 @@
     iii.--可省，其目的是避免提交引用名和文件路径名冲突的情况，一般情况下建议加上--，能一目了然地表示这是版本库对stage的覆盖
     iv.示例：
 git reset HEAD^ -- lib/go.c   #用上一个提交版本中的lib/go.c覆盖当前stage中lib/go.c
-git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中相应的文件
+git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中相应的文件，即从stage中撤出相应文件
 
   b.全重置：git reset [--soft | mixed | hard] [提交ID或引用]
     i.提交ID的[]不写则默认为HEAD
@@ -23,11 +24,11 @@ git reset HEAD           #同上
 git reset                #同上
 git reset --hard HEAD^^  #回推到上上个版本，并且stage和工作区也重置成上上个版本
 
-  c.悔棋：用git reflog挽救错误的重置（重置后发现还是充值前的那个版本更好，所以想反悔了）、
+  c.悔棋：用git reflog挽救错误的重置（重置后发现还是重置前的那个版本更好，所以想反悔了）
 *.git reset是真正的时空穿梭，不仅版本库、stage、工作区会穿梭，就连历史（git log）也会跟着一起穿梭
 *.如果git reset回了前第3次提交，那么git log中的历史也回到了前第3次提交的状态了，即看不到前第1次和前第2次的提交
 *.这就使得无法用git log来追踪重置前的提交ID，这也就意味着无法通过查看git log来回到未来了！
-*.因此git log记录的起始是版本历史而非提交历史，提交是一种操作，版本是版本库的状态，是一种时间节点
+*.因此git log记录的其实是版本历史而非提交历史，提交是一种操作，版本是版本库的状态，是一种时间节点
 *.幸好git reflog是记录纯提交操作的，就连"git reset回到过去"的提交也会被记录下来
     i.git reflog的输出格式：提交ID <引用名（分支名或者HEAD）>@{<n>}:当时的提交说明
 *.HEAD或者该分支的第n次前的提交
