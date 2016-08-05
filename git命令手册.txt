@@ -5,181 +5,11 @@
 1.查看git的版本：git --version
 
 
-2.配置git：git config（属性配置是一劳永逸的，一次配置之后就无需再配置了）
-
-  a.选项：
-    i.--global，全局有效（当前用户下全局生效）
-    ii.--system，整个系统有效（整个OS中的所有用户都全局生效，需要管理员权限sudo）
-    iii.没有选项表示只在当前仓库中生效
-
-  b.配置属性：
-    i.用户名：user.name str_name
-    ii.用户邮箱：user.email str_email
-    iii.命令别名：alias.别名 str_command
-！由于别名所替代的内容仅仅是字符串的宏替换，因此也可以替换带参数的命令别名，例如：git config --global alias.ci "commit -s"
-    iv.开启命令输出的颜色显示：color.ui boolean
-
-  c.常用配置：
-
-#用户信息配置
-git config --global user.name "double cute"
-git config --global user.email xxx@xxx.com
-
-#命令别名
-sudo git config --system alias.st status  #系统范围内的配置需要sudo权限
-git config --global alias.ci commit
-git config --global alias.co checkout
-
-#命令输出颜色开启
-git config --global color.ui true
-git config --global alias.br branch
 
 
-3.git config的本质：底层操作的是git配置文件
-
-  a.直接编辑git配置文件（-e选项表示edit，命令执行后会直接用vi打开相应的配置文件进行编辑，最后保存退出即可）：git config -e
-    i.仓库级（打开的是.git/config）：git config -e
-    ii.个人全局级（打开的是~/.gitconfig）：git config -e --global
-    iii.系统全局级（打开的是/etc/gitconfig）：sudo git config -e --system
-
-  b.git配置文件的格式是INI：属性包含在节中，节可以有子节
-
-  c.可以用git config命令显示和修改任何INI文件的内容（也包括非git配置文件）：
-    i.一般形式：[GIT_CONFIG=目标文件名] git config [--global | --system] 节1.节2...节N.属性名 [str_new_attr_val]
-    ii.第一个[]不加就代表操作的是git配置文件，而具体操作的是哪个级别的git配置文件由--global | system决定
-    iii.最后一个[]不加就代表命令只显示属性的值，如果加上str_new_attr_val就代表重设该属性的值（如果之前不存在就新建一个该属性）
-
-  d.示例：
-git config --global user.a.b.name   #显示~/.gitconfig中user下的a下的b中的属性name的值
-git config --system user.name "Peter Parker"   #将/etc/gitconfig中的user下的name属性的值改为Peter Parker
-GIT_CONFIG=dog.ini git config fur.color Yellow   #将dog.ini中狗的毛色属性改为黄色
-
-  e.删除属性：使用--unset选项并指明要删除的属性即可
-GIT_CONFIG=dog.ini git config --unset fur.color   #删除dog.ini中毛色这一属性
-git config --unset --global user.name   #删除~/.gitconfig文件中user.name这一属性
 
 
-4.创建版本库：git init
 
-  a.隐藏目录.git就是版本库（repository），而.git外层的那个目录是工作区
-
-  b.在当前目录下创建工作区的同时并初始化版本库（在工作区中自动上生成.git）：git init 工作区名
-
-  c.以当前目录作为工作区生成.git版本库：git init
-
-
-5.提交更新：git commit
-
-  a.git强制要求提交需要提交说明（描述本次提交的更新包括什么内容）：git commit -m str_comment
-
-  b.如果就是不写提交说明则会强制用vi打开一个编辑板让你输入提交说明（编写完说明后保存退出即可）：git commit
-
-  c.提交空的更新：git commit --allow-empty -m str_comment
-    i.如果之前没有git add任何待提交的更新直接强行git commit -m str_comment的话相当于空提交
-    ii.git会阻止空提交，并且git log中也不会记录空提交
-    iii.但有时候就是需要空提交以完成一些测试，为了让git log（其实也包括版本）能记住一次空提交的版本就需要用--allow-empty选项了
-
-  d.不要使用git commit -a命令，-a表示将工作区中所有直接相对于HEAD的更新一次性自动git add + git commit，由于这样做会失去对stage的控制，非常不好，没有体现出Git相对于其他版本控制系统的优势
-
-6.寻找版本库.git：git rev-parse
-
-  a.git init的机制保证了.git版本库一定是位于顶层的工作区根目录下，这是git的设计理念（参考集中式版本控制的缺点设计的）
-
-  b.这就导致了如果在不包含.git的工作区中使用git命令会报错，比如在workspace/下（workspace没用git init初始化，就意味着没有.git版本库）的某个位置（可能是某个子目录的子目录）使用git status会直接报错，显示无.git
-
-  c.也就是说.git版本库决定了git能否运行（后面的示例为当前处于绝对路径/workspace/demo/a/b/c下，其中demo/是包含.git的工作区）
-
-  d.在工作区的某个节点处寻找.git的位置：git rev-parse --git-dir   #返回/workspace/demo/.git
-
-  e.寻找工作区根目录：git rev-parse --show-toplevel   #返回/workspace/demo
-
-  f.pwd一下当前节点相对于工作区根目录的位置：git rev-parse --show-prefix   #返回a/b/c/
-
-
-7.查看提交记录：git log（从近到远显示）
-   
-  a.常规查看：git log
-
-  b.统计每次提交时文件的变更信息（会显示每次提交有几个文件更新，多少行插入以及删除）：git log --stat
-
-  c.显示每次提交的作者和提交者：git log --pretty=fuller
-  
-  d.每次提交只显示简单的一行（提交ID和提交说明）：git log --pretty=oneline
-
-  e.在oneline的基础上缩减对象ID（将原来的40位缩减为头几位）：git log --oneline
-
-  f.显示每次提交的引用（即分支以及标签号）：git log --decorate
-*.由于一般--decorate最多的用途就是查看历史中具有标签号的提交，因此都是用简化显示：git log --decorate --oneline
-
-
-8.查看文件的更新情况：git diff（会列出所有更新的文件中的更新情况）
-
-  a.工作区相对于stage的最新改动：git diff
-
-  b.工作区相对于HEAD的最新改动：git diff HEAD
-
-  c.stage相对于HEAD的最新改动：git diff --staged | cached
-
-
-9.查看当前版本状态：git status
-
-  a.全状态查看（工作区相对于stage有改动的：not staged...；stage里还有未提交的：to be commited）：git status
-
-  b.简状态查看（第1位表示stage相对于HEAD，第2位表示工作区相对于stage，A表示新增（added），M表示修改（modified），命令选项-s是simple的缩写）：git status -s
-
-  c.显示当前位于哪个分支（-b 选项，即branch的缩写）：git status -b
-！通常配合-s，git status -s -b，精简的同时也显示当前分支
-
-  d.强制查看工作区中哪些文件还未被跟踪：git status --ingored
-！加-s可以简化显示，其中??表示未被.gitignore忽略但是还未被跟踪的，而!!表示被.gitignore忽略的
-
-
-10.重置（即版本在历史中穿梭——时空漫游，移动分支游标）：git reset
-
-  a.用版本库中的某几个指定的文件覆盖stage中相应的文件：git reset [提交ID | 提交引用] -- 文件路径列表（空格隔开）
-！！特点是命令中包含单独的--和文件路径
-    i.表示用指定提交ID的版本库中的指定文件来覆盖stage中的相应文件
-    ii.如果提交ID的[]不写则默认用HEAD作为提交ID的指向
-    iii.--可省，其目的是避免提交引用名和文件路径名冲突的情况，一般情况下建议加上--，能一目了然地表示这是版本库对stage的覆盖
-    iv.示例：
-git reset HEAD^ -- lib/go.c   #用上一个提交版本中的lib/go.c覆盖当前stage中lib/go.c
-git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中相应的文件
-
-  b.全重置：git reset [--soft | mixed | hard] [提交ID或引用]
-    i.提交ID的[]不写则默认为HEAD
-    ii.--soft：仅仅将当前分支指针指向指定ID的提交处（即移动游标）
-    iii.--mixed或者缺省：移动游标的同时用指定ID所代表的版本的全部内容覆盖stage
-    iv.--hard：在--mixed的基础上，继续用覆盖后的stage来覆盖工作区，相当于直接用指定ID的版本全部同时覆盖至stage和工作区
-    v.因此--hard比较危险，容易导致损失，一定要慎用
-    vi.示例：
-git reset --soft HEAD^   #回退到上一个版本（游标前移），stage和工作区不变
-git reset --mixed HEAD^  #回退版本的同时用上一个版本的全部内容覆盖stage
-git reset --mixed HEAD   #相当于清空stage（用当前版本覆盖stage）
-git reset HEAD           #同上
-git reset                #同上
-git reset --hard HEAD^^  #回推到上上个版本，并且stage和工作区也重置成上上个版本
-
-  c.悔棋：用git reflog挽救错误的重置（重置后发现还是充值前的那个版本更好，所以想反悔了）、
-*.git reset是真正的时空穿梭，不仅版本库、stage、工作区会穿梭，就连历史（git log）也会跟着一起穿梭
-*.如果git reset回了前第3次提交，那么git log中的历史也回到了前第3次提交的状态了，即看不到前第1次和前第2次的提交
-*.这就使得无法用git log来追踪重置前的提交ID，这也就意味着无法通过查看git log来回到未来了！
-*.因此git log记录的起始是版本历史而非提交历史，提交是一种操作，版本是版本库的状态，是一种时间节点
-*.幸好git reflog是记录纯提交操作的，就连"git reset回到过去"的提交也会被记录下来
-    i.git reflog的输出格式：提交ID <引用名（分支名或者HEAD）>@{<n>}:当时的提交说明
-*.HEAD或者该分支的第n次前的提交
-*.例如git reflog的输出为
-938a761 HEAD@{0}:938a761: updating HEAD
-e2d1342 HEAD@{1}:HEAD^: updating HEAD
-    ii.可以通过reflog查看到重置之前的ID，然后利用该ID来个git reset --hard ID一下回到未来
-*.更简单的是使用<refname>@{<n>}来回到未来，即git reset --hard <refname>@{<n>}
-*.例如上面的示例回到过去：
-git reset --hard e2d1342
-git reset --hard HEAD@{1}
-*.两者完全相同，只不过后者更加强大，不依赖git reflog的查询，可以直接回到未来！
-    iii.默认查看HEAD的提交历史：git reflog
-    iv.查看指定分支的提交历史：git reflog show 分支名
-*.此时命令的显示结果的中间部分就变成了<分支名>@{<n>}
-*.例如：git reflog show master   #查看主分支的提交操作记录
 
 
 11.检出（HEAD指向分支游标，分支游标指向该分支最新的版本提交，但实际上HEAD可以指向任意提交节点，如果HEAD指向了非分支游标则发生“断头”的情况）：git checkout
@@ -417,9 +247,18 @@ doc/*.txt    #之忽略odc下的所有txt文件
     v.这些文件会用<<<<<<========>>>>>>符号标记出无法解决冲突的部分让用户自行修改，用户修改完成之后再git add、git commit便能完成最后的合并
 
   d.树冲突解决：
-    i.
+    i.说白了就是文件重命名冲突，当两个版本都对同一个文件重命名后，合并时git必然不能替你做出决定
+    ii.一旦发生了树冲突双方就必须要讨论如何解决冲突以及合并
+    iii.一般两个人的商量结果无非就是两种情况：
+      *1.最简单的情况，取其一，删除其中一个留下另一个，这样的合并可以直接通过git命令快速解决
+      *2.最麻烦的情况，需要两者取中和，可能会是两者的命名加起来的结果，这就需要手动改文件之后合并了
+    iv.树冲突合并失败后（git pull & git merge）必然会出现这样的情况：A的重命名文件和B的重名文件同时出现在工作区和stage，同时两者命名之前的文件出现在stage中，也就是说stage会出现三个
+    v.如果解决的方法仅仅是两者取其一，那么只要将舍弃的和重名之前的文件git rm掉，把要留下的那个文件git add掉，最后commit掉就完成合并了，之后push即可
+*.这种手工的方法不仅仅可以解决树冲突，而且可以解决同时发生内容修改冲突的树冲突
+    vi.同样，仅仅是两者取其一也可以使用命令行工具，git mergetool，发生冲突后直接输入命令git mergetool之后，会列出所有冲突的文件，然后根据提示逐一选择如何处理即可，非常无脑
    
   e.无法依靠git解决的冲突——逻辑冲突：即逻辑bug
     i.上述的所有情形即使是无法解决的冲突git也会提示你解决
     ii.但是某些逻辑上的冲突确实没法按照上面套路解决的，比如头文件问题，一个人改了头文件的名称推送，另一个人改了实现文件合并，没有问题，因为改动的是不同文件
     iii.但是头文件名改动后，所有引用它的实现文件中头文件名也需要该，虽然git不会报冲突，但是你工程编译的时候就会报错，而这里问题git没法解决，只能由项目经理特别注意，制定好机制来避免！
+*.冲突解决后别忘了commit，提交之后就可以push了
