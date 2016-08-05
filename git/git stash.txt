@@ -1,0 +1,33 @@
+1.保存进度日后慢聊：git stash
+
+  a.如果你现在正工作了一半，突然接到一个紧急任务要求你在另一个分支上修改一个bug（可能命令你在1小时之内改完），那现在问题来了，我当前完成了一般的任务就不得不中止待之后完成了，因此需要保存当前的任务
+*.首先不能提交当前的任务，因为该任务你只完成了一半，只有已经完成了一个阶段（可以测试运行了之后）才能提交（这是规矩）
+*.其次，你也不能不保存当前任务直接切到修改bug的分支上！不仅情理上不容（直接丢弃当前任务），而且法理上也不容，因为如果当前工作区和stage都有内容的话直接git checkout other_branch命令是拒绝执行的
+
+  b.幸好可以使用git stash命令将当前工作区和stage中的进度先暂时保存起来，进度保存后工作区和stage就干净了（并不是删除了，而是保持和HEAD一样了，用git status发现all clear），接着再checkout切换到其它分支就可以顺利进行了
+
+  c.保存当前进度：
+    i.git stash [save str_comment]   #保存进度的同时也可以对本次保存的进度做一些说明
+    ii.示例：
+git stash   #直接保存当前进度（工作区和stage）
+git stash save "music module haven't finished yet"   #保存进度的同时对该进度做一些标注（该进度中音乐模块还未完成）
+
+  d.查看进度列表：git stash list
+    i.结果显示格式是一行中：stash@{<n>}:当时保存的分支名:进度说明
+    ii.n表示最近的第n个保存的进度，按照FIFO的顺序，后保存的先显示
+    iii.如果当时保存时自己用save选项做了说明则会在list命令中看到该说明
+    iv.如果没有用save选项对保存的进度作说明可以看到默认的说明是merge操作（stash底层是通过两次提交的merge实现对进度保存的，一次是保存工作区的提交，一次是保存stage的提交，最终将这两个提交合并放在元数据库中）
+
+  e.还原进度（还原后将相应的进度从git stash list中删除）：git stash pop [--index] [<stash>]
+    i.默认值还原工作区，--index还会还原stage，因为stage是保存在refs/index文件中的
+    ii.如果没有[<stash>]则默认从最近保存的一个进度还原，否则从指定的进度还原，[<stash>]即stash@{<n>}，可以参考git stash list的结果
+    iii.示例：
+git stash pop   #还原stash@<0>，只还原工作区，不还原stage
+git stash pop --index stash@<1>   #还原上上个进度，同时还原stage和工作区
+
+  f.还原进度（和pop一样，只不过不删除git stash list中的相应进度）：git stash apply [--index] [<stash>]
+
+  g.删除某个进度：git stash drop [<stash>]
+*.默认删除最近的一个进度
+
+  h.删除list中所有的进度：git stash clear

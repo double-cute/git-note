@@ -1,0 +1,11 @@
+1.git支持的网络协议：repo.git表示hub库
+
+   a.SSH：[user@]example.com[:port]:path/.git/   --   git@github.com:double-cute/repo.git
+
+   b.HTTP[S]：http[s]://example.com[:port]/path/.git/   --   https://github.com/double-cute/repo.git
+
+   c.GIT：git://example.com[:port]/path/.git/
+
+   d.FTP[S]：ftp[s]://example.com[:port]/path/.git/
+
+   e.本地：file:///path/.git/   --   file:///path/repo/.git   （file:///path/repo.git）

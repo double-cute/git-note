@@ -1,0 +1,10 @@
+1.移动（重命名）：git mv
+
+  a.使用方法和Shell的mv一样，和git rm一样也是同时完成两步，第一步是移动工作区文件，第二步是将移动的操作添加到stage中
+
+  b.git mv old new等价于git rm old; git add new;
+
+  c.git对git mv的跟踪能力强大，如果对一个文件同时进行移动和修改操作，git可以将这两个操作合并，在status只显示一个点rename更新：
+示例：git mv old new;  echo "new line" >> new;   git add -A;   git status会只显示一个renamed: old -> new，但是提交后可以看到old和new之间内容差异百分比
+
+  d.注意：直接使用Shell mv后的新文件不会被git跟踪，但是git mv产生的新文件会和git mv操作一并加到stage中，因此git mv后的新文件一定会被跟踪的

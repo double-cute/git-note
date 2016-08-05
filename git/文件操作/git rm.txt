@@ -1,0 +1,11 @@
+1.删除工作区的文件：git rm
+
+  a.用法和Shell的rm一样，它完成两步，第一步在工作区中删除指定文件，第二步将删除这一修改动作添加到stage中
+
+  b.如果用Shell rm掉工作区文件，那么还必须将该文件git add到stage才行
+
+  c.当然最严谨的还是将工作区、stage和版本库的操作隔离开，先Shell rm工作区内容，再add，最后commit，但如果rm的文件特别多，那git add还要再抄一遍，很麻烦，还好有git add -u
+
+  d.示例：
+git rm a.txt b*c.txt   #支持通配符，工作区删除的同时也添加到stage
+rm *.txt; git add -u   #上述一条命令的分解

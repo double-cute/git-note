@@ -1,0 +1,13 @@
+1.归档：git archive
+
+  a.直接对工作区归档会遇到种种麻烦，比如把中间文件等也归档了，还有一些git配置文件也会被归档，而这些都不是我们想要的，我们只想把源代码归档
+
+  b.git archive命令只会把版本库中的目录树归档
+
+  c.zip格式归档：git archive -o 输出归档文件名 版本库中目录树的引用 [该目录下想归档的文件或目录列表]
+    i.如果最后[]不写，则默认将整个目录树归档
+    ii.示例：git archive -o latest_module.zip HEAD^ src doc   #将上一版本的src和doc目录一并归档到latest_module.zip
+
+  d.tar格式归档（需要外界辅助，git本身并没有内置tar归档器）：git archive --format=tar 目录树引用 | gzip > 输出归档文件名
+    i.目录树引用也可以是tag标签
+    ii.示例：git archive --format=tar v1.0 | gzip > foo-1.0.tar.gz

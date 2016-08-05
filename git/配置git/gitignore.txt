@@ -1,0 +1,36 @@
+1.忽略跟踪：.gitignore
+
+  a.里面记录着让git忽略跟踪的文件，特别是那些编译产生的中间文件.o .lib等，一旦被忽略，那么git add、git status等都追踪不到了
+ 
+  b.只要记录在.gitignore中的文件都将被git忽略，不管怎么git add、git add -A之类的都无法将其加入stage
+*.除非使用强制跟踪，即git add -f 文件列表，其中-f是force的缩写，该命令可以将.gitignore忽略的文件强行加入stage
+*.一旦加入stage，则文件就被git跟踪了，一旦被跟踪了，那么.gitignore对其的忽略将会无效，比如删了它在使用普通的git add也可以成功添加
+*.因此.gitignore只对未被跟踪过的文件有效，一旦被跟踪了，.gitignore就无效了！
+
+  c.强制查看工作区中哪些文件还未被跟踪：git status --ingored
+！加-s可以简化显示，其中??表示未被.gitignore忽略但是还未被跟踪的，而!!表示被.gitignore忽略的
+！最常用的还是git status --ignored -s
+
+  d.忽略的模式以及范围：
+    i.如果.gitignore放在工作区除.git的任意位置，那就是共享式的，该忽略的作用范围为本本版库（不会作用到其它版本库）
+    ii.首先，.gitignore文件自己本身也会被git追踪，一旦被追踪就会显示出其共享的特点，即push、pull的时候也会传递.gitignore文件，那么别人或者是你对忽略的设置也会在远程或者本地生效
+*.除非将.gitignore自己也忽略，即把.gitignore也记录在.gitignore中
+
+    iii.与共享对应的就是独享，独享有两种形式：
+      *1.局部独享：vim .git/info/exclude，该exclude文件就是.gitignore，作用范围就是其所处的版本库，不会影响其他版本库
+      *2.全局独享：git config --global core.excludesfile .gitignore的路径，通过该命令将.gitignore放在其它任意一个地方，并且是全局有效的（对本机的所有版本库都生效）
+      *3.示例：git config --global core.excludesfile /home/me/.gitignore
+
+  e.忽略语法：
+    i.一行一条忽略，可以使用正则表达式：*（0个或多个）、?（一个）、[abc]范围等等
+    ii.空行以及以#开头的注释将被忽略
+    iii.如果以/开头，则表示只忽略此目录下的文件，但不会递归地忽略其子文件中的内容
+    iv.如果以/结尾，则表示忽略此目录下的所有内容（会递归忽略其子目录）
+    v.以!其实表示不忽略
+    vi.示例：
+#comment
+*.a
+!lib.a       #忽略*.a但不忽略其中的lib.a
+/TODO        #之忽略TODO下的文件，但其子目录不忽略
+build/       #忽略构建目录中的所有文件
+doc/*.txt    #之忽略odc下的所有txt文件
