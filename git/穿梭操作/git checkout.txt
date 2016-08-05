@@ -14,7 +14,7 @@ git checkout -- .   #将整个工作区都还原成和stage一样！相当危险，其实整个git chec
 
   c.检出分支（切换分支）：git checkout [<分支名>]
     i.该命令的主要特点是没有文件路径了
-    ii.该命令会切换HEAD指向指定的分只游标
+    ii.该命令会切换HEAD指向指定的分支游标
     iii.并且会用指定分支的最新版本覆盖stage和工作区，即完全和指定分支的最新版本干净、一致的状态
     iv.执行该命令的前提是必须保证当前工作区和stage干净（即没有任何更新，stage相对于当前版本、工作区相对于staged），否则报错拒绝执行
     v.如果省略分支名则默认分支为HEAD，即git checkout == git checkout HEAD，这并不表示用当前版本还原stage和工作区，仅仅就是显示当前工作区、stage和HEAD的差异，不做任何改变

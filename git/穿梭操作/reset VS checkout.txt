@@ -1,0 +1,18 @@
+git checkout val:
+	HEAD = val
+
+git reset val:
+	if valueof(HEAD) == 某个branch_pointer:
+		*HEAD = val
+	else
+		HEAD = val
+
+浅显一点就是git reset val:
+	if HEAD->branch != NULL:
+		HEAD->branch = val
+	else
+		HEAD = val
+
+！即HEAD永远表示现场！！现场就是指当前的版本！！
+当HEAD指向某个分支时，刚好当前版本就是该分支的最顶端版本罢了！！
+HEAD是一个重指针，branch是一个普通指针！

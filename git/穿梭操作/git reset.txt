@@ -1,4 +1,4 @@
-1.重置（即版本在历史中穿梭——时空漫游，移动分支游标）：git reset
+1.重置（重设HEAD的现场）：git reset
 #主要还原stage
 
   a.用版本库中的某几个指定的文件覆盖stage中相应的文件：git reset [提交ID | 提交引用] -- 文件路径列表（空格隔开）
@@ -12,8 +12,8 @@ git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中
 
   b.全重置：git reset [--soft | mixed | hard] [提交ID或引用]
     i.提交ID的[]不写则默认为HEAD
-    ii.--soft：仅仅将当前分支指针指向指定ID的提交处（即移动游标）
-    iii.--mixed或者缺省：移动游标的同时用指定ID所代表的版本的全部内容覆盖stage
+    ii.--soft：仅仅将现场指向指定ID的提交处（即移动游标）
+    iii.--mixed或者缺省：移动现场指针的同时用指定ID所代表的版本的全部内容覆盖stage
     iv.--hard：在--mixed的基础上，继续用覆盖后的stage来覆盖工作区，相当于直接用指定ID的版本全部同时覆盖至stage和工作区
     v.因此--hard比较危险，容易导致损失，一定要慎用
     vi.示例：
@@ -45,3 +45,4 @@ git reset --hard HEAD@{1}
     iv.查看指定分支的提交历史：git reflog show 分支名
 *.此时命令的显示结果的中间部分就变成了<分支名>@{<n>}
 *.例如：git reflog show master   #查看主分支的提交操作记录
+
