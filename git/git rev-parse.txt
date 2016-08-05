@@ -1,0 +1,13 @@
+1.寻找版本库.git：git rev-parse
+
+  a.git init的机制保证了.git版本库一定是位于顶层的工作区根目录下，这是git的设计理念（参考集中式版本控制的缺点设计的）
+
+  b.这就导致了如果在不包含.git的工作区中使用git命令会报错，比如在workspace/下（workspace没用git init初始化，就意味着没有.git版本库）的某个位置（可能是某个子目录的子目录）使用git status会直接报错，显示无.git
+
+  c.也就是说.git版本库决定了git能否运行（后面的示例为当前处于绝对路径/workspace/demo/a/b/c下，其中demo/是包含.git的工作区）
+
+  d.在工作区的某个节点处寻找.git的位置：git rev-parse --git-dir   #返回/workspace/demo/.git
+
+  e.寻找工作区根目录：git rev-parse --show-toplevel   #返回/workspace/demo
+
+  f.pwd一下当前节点相对于工作区根目录的位置：git rev-parse --show-prefix   #返回a/b/c/

@@ -1,0 +1,52 @@
+1.配置git：git config（属性配置是一劳永逸的，一次配置之后就无需再配置了）
+
+  a.选项：
+    i.--global，全局有效（当前用户下全局生效）
+    ii.--system，整个系统有效（整个OS中的所有用户都全局生效，需要管理员权限sudo）
+    iii.没有选项表示只在当前仓库中生效
+
+  b.配置属性：
+    i.用户名：user.name str_name
+    ii.用户邮箱：user.email str_email
+    iii.命令别名：alias.别名 str_command
+！由于别名所替代的内容仅仅是字符串的宏替换，因此也可以替换带参数的命令别名，例如：git config --global alias.ci "commit -s"
+    iv.开启命令输出的颜色显示：color.ui boolean
+
+  c.常用配置：
+
+#用户信息配置
+git config --global user.name "double cute"
+git config --global user.email xxx@xxx.com
+
+#命令别名
+sudo git config --system alias.st status  #系统范围内的配置需要sudo权限
+git config --global alias.ci commit
+git config --global alias.co checkout
+
+#命令输出颜色开启
+git config --global color.ui true
+git config --global alias.br branch
+
+
+2.git config的本质：底层操作的是git配置文件
+
+  a.直接编辑git配置文件（-e选项表示edit，命令执行后会直接用vi打开相应的配置文件进行编辑，最后保存退出即可）：git config -e
+    i.仓库级（打开的是.git/config）：git config -e
+    ii.个人全局级（打开的是~/.gitconfig）：git config -e --global
+    iii.系统全局级（打开的是/etc/gitconfig）：sudo git config -e --system
+
+  b.git配置文件的格式是INI：属性包含在节中，节可以有子节
+
+  c.可以用git config命令显示和修改任何INI文件的内容（也包括非git配置文件）：
+    i.一般形式：[GIT_CONFIG=目标文件名] git config [--global | --system] 节1.节2...节N.属性名 [str_new_attr_val]
+    ii.第一个[]不加就代表操作的是git配置文件，而具体操作的是哪个级别的git配置文件由--global | system决定
+    iii.最后一个[]不加就代表命令只显示属性的值，如果加上str_new_attr_val就代表重设该属性的值（如果之前不存在就新建一个该属性）
+
+  d.示例：
+git config --global user.a.b.name   #显示~/.gitconfig中user下的a下的b中的属性name的值
+git config --system user.name "Peter Parker"   #将/etc/gitconfig中的user下的name属性的值改为Peter Parker
+GIT_CONFIG=dog.ini git config fur.color Yellow   #将dog.ini中狗的毛色属性改为黄色
+
+  e.删除属性：使用--unset选项并指明要删除的属性即可
+GIT_CONFIG=dog.ini git config --unset fur.color   #删除dog.ini中毛色这一属性
+git config --unset --global user.name   #删除~/.gitconfig文件中user.name这一属性

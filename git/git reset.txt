@@ -1,0 +1,46 @@
+1.重置（即版本在历史中穿梭——时空漫游，移动分支游标）：git reset
+
+  a.用版本库中的某几个指定的文件覆盖stage中相应的文件：git reset [提交ID | 提交引用] -- 文件路径列表（空格隔开）
+！！特点是命令中包含单独的--和文件路径
+    i.表示用指定提交ID的版本库中的指定文件来覆盖stage中的相应文件
+    ii.如果提交ID的[]不写则默认用HEAD作为提交ID的指向
+    iii.--可省，其目的是避免提交引用名和文件路径名冲突的情况，一般情况下建议加上--，能一目了然地表示这是版本库对stage的覆盖
+    iv.示例：
+git reset HEAD^ -- lib/go.c   #用上一个提交版本中的lib/go.c覆盖当前stage中lib/go.c
+git reset lib/go.c lib/do.c   #用当前HEAD中的lib/go.c和lib/do.c来覆盖当前stage中相应的文件
+
+  b.全重置：git reset [--soft | mixed | hard] [提交ID或引用]
+    i.提交ID的[]不写则默认为HEAD
+    ii.--soft：仅仅将当前分支指针指向指定ID的提交处（即移动游标）
+    iii.--mixed或者缺省：移动游标的同时用指定ID所代表的版本的全部内容覆盖stage
+    iv.--hard：在--mixed的基础上，继续用覆盖后的stage来覆盖工作区，相当于直接用指定ID的版本全部同时覆盖至stage和工作区
+    v.因此--hard比较危险，容易导致损失，一定要慎用
+    vi.示例：
+git reset --soft HEAD^   #回退到上一个版本（游标前移），stage和工作区不变
+git reset --mixed HEAD^  #回退版本的同时用上一个版本的全部内容覆盖stage
+git reset --mixed HEAD   #相当于清空stage（用当前版本覆盖stage）
+git reset HEAD           #同上
+git reset                #同上
+git reset --hard HEAD^^  #回推到上上个版本，并且stage和工作区也重置成上上个版本
+
+  c.悔棋：用git reflog挽救错误的重置（重置后发现还是充值前的那个版本更好，所以想反悔了）、
+*.git reset是真正的时空穿梭，不仅版本库、stage、工作区会穿梭，就连历史（git log）也会跟着一起穿梭
+*.如果git reset回了前第3次提交，那么git log中的历史也回到了前第3次提交的状态了，即看不到前第1次和前第2次的提交
+*.这就使得无法用git log来追踪重置前的提交ID，这也就意味着无法通过查看git log来回到未来了！
+*.因此git log记录的起始是版本历史而非提交历史，提交是一种操作，版本是版本库的状态，是一种时间节点
+*.幸好git reflog是记录纯提交操作的，就连"git reset回到过去"的提交也会被记录下来
+    i.git reflog的输出格式：提交ID <引用名（分支名或者HEAD）>@{<n>}:当时的提交说明
+*.HEAD或者该分支的第n次前的提交
+*.例如git reflog的输出为
+938a761 HEAD@{0}:938a761: updating HEAD
+e2d1342 HEAD@{1}:HEAD^: updating HEAD
+    ii.可以通过reflog查看到重置之前的ID，然后利用该ID来个git reset --hard ID一下回到未来
+*.更简单的是使用<refname>@{<n>}来回到未来，即git reset --hard <refname>@{<n>}
+*.例如上面的示例回到过去：
+git reset --hard e2d1342
+git reset --hard HEAD@{1}
+*.两者完全相同，只不过后者更加强大，不依赖git reflog的查询，可以直接回到未来！
+    iii.默认查看HEAD的提交历史：git reflog
+    iv.查看指定分支的提交历史：git reflog show 分支名
+*.此时命令的显示结果的中间部分就变成了<分支名>@{<n>}
+*.例如：git reflog show master   #查看主分支的提交操作记录

@@ -1,0 +1,11 @@
+1.查看当前版本状态：git status
+
+  a.全状态查看（工作区相对于stage有改动的：not staged...；stage里还有未提交的：to be commited）：git status
+
+  b.简状态查看（第1位表示stage相对于HEAD，第2位表示工作区相对于stage，A表示新增（added），D表示删除（deleted）M表示修改（modified），命令选项-s是simple的缩写）：git status -s
+
+  c.显示当前位于哪个分支（-b 选项，即branch的缩写）：git status -b
+！通常配合-s，git status -s -b，精简的同时也显示当前分支
+
+  d.强制查看工作区中哪些文件还未被跟踪：git status --ingored
+！加-s可以简化显示，其中??表示未被未被跟踪的，而!!表示被.gitignore强制忽略的

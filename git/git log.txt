@@ -1,0 +1,18 @@
+1.查看提交记录：git log（从近到远显示）
+   
+  a.常规查看：git log
+
+  b.统计每次提交时文件的变更信息（会显示每次提交有几个文件更新，多少行插入以及删除）：git log --stat
+
+  c.显示每次提交的作者和提交者：git log --pretty=fuller
+  
+  d.每次提交只显示简单的一行（提交ID和提交说明）：git log --pretty=oneline
+
+  e.在oneline的基础上缩减对象ID（将原来的40位缩减为头几位）：git log --oneline
+
+  f.显示每次提交的引用（即分支以及标签号）：git log --decorate
+*.由于一般--decorate最多的用途就是查看历史中具有标签号的提交，因此都是用简化显示：git log --decorate --oneline
+
+  g.显示当前分支的树状提交关系：git log --graph
+*.通常树状关系线条会占用屏幕很大空间，因此每次提交的信息应该尽量简化显示，通常配合--oneline使用
+*.即git log --graph --oneline

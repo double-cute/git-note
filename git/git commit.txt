@@ -1,0 +1,12 @@
+1.提交更新：git commit
+
+  a.git强制要求提交需要提交说明（描述本次提交的更新包括什么内容）：git commit -m str_comment
+
+  b.如果就是不写提交说明则会强制用vi打开一个编辑板让你输入提交说明（编写完说明后保存退出即可）：git commit
+
+  c.提交空的更新：git commit --allow-empty -m str_comment
+    i.如果之前没有git add任何待提交的更新直接强行git commit -m str_comment的话相当于空提交
+    ii.git会阻止空提交，并且git log中也不会记录空提交
+    iii.但有时候就是需要空提交以完成一些测试，为了让git log（其实也包括版本）能记住一次空提交的版本就需要用--allow-empty选项了
+
+  d.不要使用git commit -a命令，-a表示将工作区中所有直接相对于HEAD的更新一次性自动git add + git commit，由于这样做会失去对stage的控制，非常不好，没有体现出Git相对于其他版本控制系统的优势

@@ -1,0 +1,7 @@
+1.查看文件的更新情况：git diff（会列出所有更新的文件中的更新情况）
+
+  a.工作区相对于stage的最新改动：git diff
+
+  b.工作区相对于HEAD的最新改动：git diff HEAD
+
+  c.stage相对于HEAD的最新改动：git diff --staged | cached
