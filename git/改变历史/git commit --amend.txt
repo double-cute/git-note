@@ -1,0 +1,36 @@
+1.单步悔棋（修改最近一次提交说明）：git commit --amend
+ 
+  a.如果最近一次提交说明你觉得不满意或者描述不准确想修改，但是又不想把修改提交说明的过程留在历史里，因此就不能使用git commit --allow-emtpy -m了
+*.因为空提交还是会留在git log的历史中，如果查看--graph的话这种修改会留在历史中，很不好看，很多余
+  
+  b.其实git中所有的修改历史操作（修改提交（单步悔棋、多步悔棋）、分拣、变基等）都可以使用git reset、git checkout来实现，因此可以看出git reset/checkout的强大了
+*.很多其他版本控制软件（不管是集中式的还是分布式的），都无法像git那样提供如此丰富的历史修改工具（并且如此高效），这得益于git reset/checkout的强大
+*.由于像悔棋、分拣、编辑等修改历史的操作在平时用得太频繁了，因此git用脚本对git reset/checkout进行了包装来分别实现这些命令
+
+  c.单步悔棋：git commit --amend -m str_amend_commit
+    i.其等价于：git reset --soft HEAD^;   git commit -m str_amend_commit
+    ii.因此这样的对提交说明的修改是不会记录到git log中的
+    iii.但amend操作还是会记录在git reflog中
+
+  d.示例：
+git commit --amend -m "amended commit"    #将上一次提交说明改为amended commit
+git checkout HEAD^ -- a.txt;  git commit --amend -m "stay a.txt"    #撤销上一个版本对a.txt的修改后提交（因此提交说明也要改）
+*.像这种悔棋不仅修改了上一次提交的说明，而且也修改上一次提交的内容
+
+  e.git commit --amend只能修改上一版本的内容和提交说明，但是要修改上上版本或更多的（多步悔棋），就不适用了
+*.原因很简单，因为git commit --amend的第一步是git reset --soft HEAD^，已经定了就是HEAD^，因此只能悔一步，不能超过一步
+
+
+2.多步悔棋（合并之前多次提交并修改提交说明）：
+
+  a.git并没有提供多步悔棋的简化命令，因此只能自己手动实现，实现方法就是单步悔棋动作分解后自己来，把HEAD^换成HEAD~n，n就是悔棋步数
+
+  b.多步悔棋：即--amend的拆分实现
+    i.仅仅悔提交说明：
+git reset --soft HEAD~n
+git commit -m str_amend_commit
+    ii.修改提交同时修改提交内容：
+#git checkout HEAD~n -- 要还原的文件
+git reset --soft HEAD~n
+#自定义修改文件内容
+git commit -m str_amend commit
