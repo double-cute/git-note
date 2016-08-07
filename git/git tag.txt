@@ -1,5 +1,0 @@
-1.打标签（快照）：git tag
-  
-  a.打标签的同时做出说明：git tag -m str_comment 标签名
-
-  b.查看当前版本与最近一次标签的距离：git describe
