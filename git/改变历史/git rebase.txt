@@ -68,3 +68,41 @@
     i.但实际是灵活的，如果主分支嫁接的时候里两分支的最近公共祖先已经非常远（中间隔了很多次提交了），至少要比从分支长很多
     ii.那么直接将master嫁接到从分支上会导致分拣冲突次数非常多
     iii.所以在这时正确的做法应该是将从分支嫁接到主分支上，最后再将主分支的头master接回到这个从分支上，在删除从分支的引用即可
+
+
+4.功能强大的交互式变基：git rebase -i
+
+  a.之前介绍的变基命令执行后中间的执行过程不可见，你也很难去插手中间的cherry-pick过程，但是通过交互式变基就可以办到
+
+  b.git rebase -i <newbase>：
+    i.会弹出一个交互式脚本文件让你编辑：
+pick 347ff9f 4
+pick 908408c 5
+pick 2decc98 6
+
+# Rebase a0ebe96..2decc98 onto a0ebe96 (4 command(s))
+#
+# Commands:
+# p, pick = use commit
+# r, reword = use commit, but edit the commit message
+# e, edit = use commit, but stop for amending
+# s, squash = use commit, but meld into previous commit
+# f, fixup = like "squash", but discard this commit's log message
+# x, exec = run command (the rest of the line) using shell
+# d, drop = remove commit
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
+# Note that empty commits are commented out
+    ii.其中头几行从上到下分别是嫁接链（如果A嫁接到B，那么该链就是A上的最近公共祖先到A末尾的链）上提交点，按顺序的！
+    iii.对于这些一个个要嫁接的提交共有多种cherry-pick的方式，全部都罗列在下面了
+    iv.其中最常用的就是pick和squash：
+      *1.pick就是普通的应用提交
+      *2.squash表示和上一行（即上一个）提交融合成一个提交，并且提交说明也采用上一个提交的
+    v.其实该文件就是<left>到<right>的暂存文件（脚本化），你完全可以通过改变头几行的顺序来改变cherry-pick时的顺序
+*.也可以删除其中几行以表示在cheryy-pick时忽略那几个提交！！以实现真正的插手嫁接过程！！
+    vi.保存退出该脚本文件后会立即执行rebase嫁接
