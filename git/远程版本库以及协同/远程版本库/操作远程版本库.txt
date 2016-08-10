@@ -1,0 +1,32 @@
+1.注册：git remote add <new-remote-name> <new-remote-url>
+*.示例：git remote add another_remote git@github.com:xxx/repo/xxx.git
+ 
+
+2.查看当前注册过的远程版本库：
+
+  a.简化版：git remote
+
+  b.详细版：git remote -v
+*.不仅会列出名字，同时也展示各个远程版本库对应的URL
+
+
+3.更改地址：git remote set-url <remote-name> <new-url>
+*.示例：git remote set-url origin file:///path/repo/xxx.git
+*.更改后开git remote -v查看一下变化
+
+
+4.改名：git remote rename <old-remote-name> <new-remote-name>
+*.示例：git remote rename origin new_origin
+*.更改后可以通过git remote查看
+
+
+5.更新：git remote update
+  
+  a.更新所有远程版本库到refs/remotes中：git remote update
+*.其等价脚本就是一个一个地git fetch <remote-name>，自动采用各个remote的fetch参数，跟新其中的所有分支
+
+  b.如果不想更新全部，则可以关闭其中几个版本库的自动跟新：git config remote.<remote-name>.skipDefaultUpdate true
+*.设置完之后，git remote update时只有上述远程库不更新，其余全更新
+
+
+6.删除注册的远程库：git remote rm <remote-name>

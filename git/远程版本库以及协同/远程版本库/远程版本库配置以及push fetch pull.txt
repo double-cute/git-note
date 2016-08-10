@@ -1,0 +1,50 @@
+1.远程版本库以及HEAD分支的配置信息：git push/fetch命令简化的依据
+
+  a.所有注册过的远程版本库都会在.git/config中有配置信息：
+[remote <remote-name>]
+	url = #...
+	fetch = +refs/heads/*:refs/remotes/<remote-name>/*
+
+  b.所有在当前HEAD中创建过的分支也会在.git/config中有如下配置信息：
+[branch <branch-name>]
+	remote = <remote-name>   #该分支的上游版本库（即跟踪的远程版本库）
+	merge = refs/heads/<branch-name>
+
+  c.简化git push：
+    i.git push的完整写法是：git push [<remote-repo>] [[<local-branch-name>][:<remote-branch-name>]]
+    ii.如果当前所在分支（即当前HEAD指向的分支）的分支名是<branch-name>那么：
+git push == git push branch.<branch-name>.remote.url HEAD:<branch-name>
+*.这就是背后的等价脚本，因此不同名、没跟踪时会报错！
+*.即把当前分支推向当前分支的上游版本库中的同名分支上！即跟踪分支推送的简化写法
+*.示例：当前分支名为branch，则git push == git push branch HEAD:branch
+    iii.如果单单一个git push <remote-repo>则等价于git push <remote-repo> HEAD:远程同名分支
+*.这也是背后的等价脚本，因此不同名时会报错！
+*.即把当前分支推向远程版本库的同名分支
+*.示例当前分支是branch：git push origin == git push origin HEAD:branch
+    iv.完整用法，可以把本地不同名分支推送到远程，例如：git push origin new_branch:x_branch
+*.其中new_branch是本地的分支，x_branch是远程origin中存在的分支
+    v.删除远程分支：git push <remote-repo> :远程分支名
+*.即把空推送给远程分支，相当于删除那个远程分支
+
+  d.简化git fetch：git fetch [<remote-repo>] [[<remote-branch-name>][:refs/remotes/<remote-repo>/<remote-branch-name>]
+    i.完整示例：git fetch origin branch:refs/remotes/origin/branch
+*.将远程origin中的分支branch更新到本地分支origin/branch中
+    ii.假设当前分支名为br，那么git fetch == git fetch branch.br.remote.url br:refs/remotes/branch.br.remote/br
+*.即从上游跟踪分支中下载到本地同名的远程分支中
+    iii.总的来说git fetch的简化版就是用跟踪的上游版本库中的同名分支来更新当前分支（本地远程中的分支）
+
+  e.fetch属性和git fetch <remote-repo>的关系
+    i.上面讲过，注册的远程版本库在.git/config配置中还有一个属性，即fetch属性，默认为：+refs/heads/*:refs/remotes/<remote-name>/*
+    ii.该属性存在的作用是：使it fetch <remote-name>的等价脚本为git fetch <remote-name> remote.<remote-name>.fetch
+    iii.示例：git fetch origin == git fetch origin +refs/heads/*:refs/remotes/origin/*
+！！远程分支加不加refs/heads/前缀都一样！是等价的！
+*.该fetch属性的意思是将远程库中所有同名分支更新到本地！
+    vi.因此git fetch <remote-repo>不再是指更新当前分支了，而是更新指定远程版本库中的所有分支了！！！
+    vii.相当于git remote update <remote-repo>！
+
+  f.git pull：
+    i.git pull用法和git fetch完全一样，简化的意义也和git fetch一样，只不过比git fetch多一步合并操作，默认使用对应的本地远程分支做合并
+    ii.只不过git pull一般只用完整版的（具体拉回某个分支）和最简版的（git pull）只拉回当前分支，不使用git pull <remote-name>（一般不默认合并多个分支）
+    iii.变基拉回：git pull --rebase
+*.表示fetch后用变基合并而非merge合并，以简化历史
+*.可以设置git config branch.<branchname>.rebase true来指定拉回默认使用变基合并，此时可以不加--rebase选项了默认表示用变基来代替merge了！

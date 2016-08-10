@@ -1,0 +1,23 @@
+1.注册远程版本库：git remote add
+
+  a.其实在协同开发的时候可以不止有一个远程版本库，一般在初始化一个版本库（即注册第一个远程版本库时）会把它的上游命名为origin
+
+  b.注册远程版本库：git remote add <new-remote-repo-name> <remote-repo-url>
+
+  c.注册完之后就会在本地远程分支（refs/remote）中看到新注册的远程版本库分支了<new-remote-repo-name>
+
+  d.示例：git remote add new-remote file:///path/repo/test.git
+*.之后会看到在refs/remote下（git branch -r）看到多个new-remote的分支：
+new-remote/branch1.0
+new-remote/helper等等
+
+  e.之后就可以将新远程库中的分支跟踪到当前HEAD中了：git checkout <同名分支> 或者 git checkout -b <跟踪分支名> new-branch/远程分支名
+
+  f.对于直接clone过来的版本库里直接将被克隆的版本库注册为第一个远程版本库，origin是其默认名
+*.但对于一个自行git init出来的空版本库，从远程第一次拉之前最好先注册一下：
+#非git clone来复制一个远程版本库
+git init   #自行初始化一个空的版本库
+git remote add origin <remote-url>   #一般第一个远程版本库都命名为origin
+git pull  #注册之后就可以使用简化命令拉回了，不必显式写出完整的远程库URL了
+
+

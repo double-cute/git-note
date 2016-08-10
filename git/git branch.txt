@@ -33,7 +33,8 @@
 
 
 2.查看分支：git branch
-*.罗列出当前版本库中所有分支，并且在当前所处的分支前用*标识出来
+  i.简单罗列出所有分支（当前所处的分支前用*标识出来）：git branch
+  ii.查看本地远程分支（罗列出所有refs/remote下的本地远程分支）：git branch -r
 
 
 3.创建分支：git branch <branchname> [<start-point>]

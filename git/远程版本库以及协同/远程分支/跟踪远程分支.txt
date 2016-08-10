@@ -18,8 +18,8 @@
     i.注意！它们可不是正常的分支，而是一种特殊的引用，即远程引用
     ii.不是正常分支的证据：git checkout origin/branch后会提示断头错误！这就说明refs/remote下的不是分支而是引用
     iii.但它们又不是普通的引用，而是带有附加信息的引用，附加信息就是“这是一个远程引用”
-    iv.附加信息的证据就是：git checkout -b branch origin/branch中，第二个参数origin/branch并不是<startpoint>
-*.命令并不会在origin/branch这个节点上建立branch分支
+    iv.附加信息的证据就是：git checkout -b branch origin/branch中，第二个参数origin/branch并不是<startpoint>，这两个命令等价！！
+*.命令并不会在origin/branch这个节点上建立branch分支，还是在当前节点处建立分支
 *.而是git检测到origin/branch这个引用是一个远程引用时就会自动把该git checkout -b命令解释为远程分支跟踪命令而非建立并切换分支命令！！
 
 
@@ -30,3 +30,12 @@
   b.本地的branch称为跟踪分支，refs/remote下的称为本地远程分支，真正远程版本库中对应的分支称为远程分支
 
   c.通过上面的命令三者之间建立跟踪关系
+
+
+3.一旦建立跟踪关系后那么跟踪分支就会具有如下特性：
+
+  a.git status会显示跟踪分支和对应的远程分支之间的关系（快几个提交或晚几个提交）
+
+  b.git pull时会将远程分支更新到本地远程分支，然后跟踪分支会跟对应的本地远程分支合并
+
+  c.git push时会自动将跟踪分支推送到对应的远程分支去（其实就是远程版本库中的同名分支）
