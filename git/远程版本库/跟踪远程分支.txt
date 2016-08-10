@@ -1,0 +1,32 @@
+1.跟踪远程分支：
+  
+  a.远程分支的用法：
+    i.refs/remote下的远程分支就是用来获取远程分支最新的版本用的，即refs/remote就是对外接受新事物的窗口
+    ii.但是获取远程分支的目的就是为了在分支上进行开发，因此需要再在本地建立一个开发版本的分支和refs/remote下的远程分支对应起来
+
+  b.这种对应就是远程分支的跟踪：git checkout（跟踪的同时也直接切换到跟踪分支上）
+    i.git checkout -b 跟踪分支名 远程分支（refs/remote下的）
+*.例如：git checkout -b branch_x origin/branch_x
+*.其实不同名也没关系：git checkout -b new_branch origin/branch_x
+    ii.老版本的git需要使用上述死板的命令，新版本更加只能，可以识别同名分支：git checkout 远程分支名
+*.例如：git checkout branch_x
+*.git会自动搜索refs/remote目录，查找有无同名分支（branch_x），如果有就跟踪那个分支
+*.其实就是用等价脚本实现的：== git checkout <branchname> refs/remote/repo/branchname
+    iii.命令执行后会显示“track remote branch xxx from remote_repo”的信息，表示跟踪了远程分支
+
+  c.refs/remote下的远程分支是一种特殊的对象——远程引用：
+    i.注意！它们可不是正常的分支，而是一种特殊的引用，即远程引用
+    ii.不是正常分支的证据：git checkout origin/branch后会提示断头错误！这就说明refs/remote下的不是分支而是引用
+    iii.但它们又不是普通的引用，而是带有附加信息的引用，附加信息就是“这是一个远程引用”
+    iv.附加信息的证据就是：git checkout -b branch origin/branch中，第二个参数origin/branch并不是<startpoint>
+*.命令并不会在origin/branch这个节点上建立branch分支
+*.而是git检测到origin/branch这个引用是一个远程引用时就会自动把该git checkout -b命令解释为远程分支跟踪命令而非建立并切换分支命令！！
+
+
+2.小结：术语
+  
+  a.以此为示例：git checkout -b branch origin/branch
+  
+  b.本地的branch称为跟踪分支，refs/remote下的称为本地远程分支，真正远程版本库中对应的分支称为远程分支
+
+  c.通过上面的命令三者之间建立跟踪关系
